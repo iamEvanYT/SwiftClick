@@ -47,8 +47,8 @@ class Clicker {
     this.onTickCallback?.(this.currentClickCount);
 
     this.interval = setInterval(() => {
-      click();
-      // robotjs.mouseClick(this.settings.mouseButton, this.settings.clickType === "double");
+      click(this.settings.mouseButton, this.settings.clickType === "double");
+
       this.currentClickCount++;
       this.onTickCallback?.(this.currentClickCount);
 

@@ -3,12 +3,15 @@ import {
   CGEventCreateMouseEvent,
   CGEventPost,
   CGEventSetType,
+  CGEventSetIntegerValueField,
+  CGEventField,
   CGEventTapLocation,
   CGEventType,
   CGMouseButton
 } from "objcjs-extra/CoreGraphics";
 import { CFRelease } from "objcjs-extra/CoreFoundation";
 import { systemPreferences } from "electron";
+import { MouseButton } from "../common/settings";
 
 function getMousePosition() {
   // Get the current mouse location using NSEvent (Cocoa coordinates, y=0 at bottom)
@@ -31,22 +34,47 @@ function canClick() {
   return isTrusted;
 }
 
-export function click() {
+export function click(mouseButton: MouseButton, isDoubleClick: boolean) {
   if (!canClick()) {
     console.log("Can not click");
     return;
+  }
+
+  // Make the events
+  let downEvent: CGEventType = CGEventType.LeftMouseDown;
+  let upEvent: CGEventType = CGEventType.LeftMouseUp;
+  let button: CGMouseButton = CGMouseButton.Left;
+
+  if (mouseButton === "right") {
+    downEvent = CGEventType.RightMouseDown;
+    upEvent = CGEventType.RightMouseUp;
+    button = CGMouseButton.Right;
+  } else if (mouseButton === "middle") {
+    downEvent = CGEventType.OtherMouseDown;
+    upEvent = CGEventType.OtherMouseUp;
+    button = CGMouseButton.Center;
   }
 
   // Get current position
   const currentPos = getMousePosition();
 
   // Create a proper mouse event and reuse for both down/up
-  const clickEvent = CGEventCreateMouseEvent(null, CGEventType.LeftMouseDown, currentPos, CGMouseButton.Left);
+  const clickEvent = CGEventCreateMouseEvent(null, downEvent, currentPos, button);
   CGEventPost(CGEventTapLocation.SessionEventTap, clickEvent);
 
   // Change to mouse up and repost
-  CGEventSetType(clickEvent, CGEventType.LeftMouseUp);
+  CGEventSetType(clickEvent, upEvent);
   CGEventPost(CGEventTapLocation.SessionEventTap, clickEvent);
+
+  if (isDoubleClick) {
+    // Second click with click state 2 to register as a double-click
+    CGEventSetType(clickEvent, downEvent);
+    CGEventSetIntegerValueField(clickEvent, CGEventField.MouseEventClickState, 2);
+    CGEventPost(CGEventTapLocation.SessionEventTap, clickEvent);
+
+    CGEventSetType(clickEvent, upEvent);
+    CGEventPost(CGEventTapLocation.SessionEventTap, clickEvent);
+  }
 
   CFRelease(clickEvent);
 }
