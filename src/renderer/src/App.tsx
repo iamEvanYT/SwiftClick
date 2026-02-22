@@ -1,34 +1,58 @@
-import Versions from "./components/Versions";
-import electronLogo from "./assets/electron.svg";
+import { useAutoclicker } from "./hooks/use-autoclicker";
+import { useHotkeyEditor } from "./hooks/use-hotkey-editor";
+import { ControlPanel } from "./components/control-panel";
+import { SettingsPanel } from "./components/settings-panel";
 
 function App(): React.JSX.Element {
-  const ipcHandle = (): void => window.electron.ipcRenderer.send("ping");
+  const { isActive, settings, clickCount, handleStart, handleStop, handleSettingChange, progress } = useAutoclicker();
+
+  const {
+    isEditingHotkey,
+    pendingHotkey,
+    canSaveHotkey,
+    handleHotkeyEdit,
+    handleHotkeyKeyDown,
+    handleHotkeySave,
+    handleHotkeyCancel,
+    handleHotkeyClear
+  } = useHotkeyEditor(handleSettingChange);
 
   return (
-    <>
-      <img alt="logo" className="logo" src={electronLogo} />
-      <div className="creator">Powered by electron-vite</div>
-      <div className="text">
-        Build an Electron app with <span className="react">React</span>
-        &nbsp;and <span className="ts">TypeScript</span>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex flex-col">
+      {/* Draggable Header */}
+      <div
+        className="h-[35px] flex items-center justify-center"
+        style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
+      >
+        <div className="text-xs text-slate-500 font-medium">SwiftClick</div>
       </div>
-      <p className="tip">
-        Please try pressing <code>F12</code> to open the devTool
-      </p>
-      <div className="actions">
-        <div className="action">
-          <a href="https://electron-vite.org/" target="_blank" rel="noreferrer">
-            Documentation
-          </a>
-        </div>
-        <div className="action">
-          <a target="_blank" rel="noreferrer" onClick={ipcHandle}>
-            Send IPC
-          </a>
-        </div>
+
+      {/* Main Content */}
+      <div className="flex-1 px-4 pb-4">
+        <ControlPanel
+          isActive={isActive}
+          clickCount={clickCount}
+          settings={settings}
+          progress={progress}
+          onStart={handleStart}
+          onStop={handleStop}
+        />
+
+        <SettingsPanel
+          settings={settings}
+          isActive={isActive}
+          isEditingHotkey={isEditingHotkey}
+          pendingHotkey={pendingHotkey}
+          canSaveHotkey={canSaveHotkey}
+          onSettingChange={handleSettingChange}
+          onHotkeyEdit={handleHotkeyEdit}
+          onHotkeyClear={handleHotkeyClear}
+          onHotkeyKeyDown={handleHotkeyKeyDown}
+          onHotkeySave={handleHotkeySave}
+          onHotkeyCancel={handleHotkeyCancel}
+        />
       </div>
-      <Versions></Versions>
-    </>
+    </div>
   );
 }
 
