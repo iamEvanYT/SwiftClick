@@ -13,28 +13,31 @@ import { CFRelease } from "objcjs-extra/CoreFoundation";
 import { systemPreferences } from "electron";
 import { MouseButton } from "../common/settings";
 
-function getMousePosition() {
-  // Get the current mouse location using NSEvent (Cocoa coordinates, y=0 at bottom)
-  const mouseLocation = NSEvent.mouseLocation();
-
-  // Convert to CoreGraphics coordinates (y=0 at top)
-  const mainScreen = NSScreen.mainScreen();
-  if (!mainScreen) throw new Error("No main screen found");
-  const screenHeight = mainScreen.frame().size.height;
-  const currentPos = {
-    x: mouseLocation.x,
-    y: screenHeight - mouseLocation.y
-  };
-
-  return currentPos;
+function getCocoaMaxY(): number {
+  const screens = NSScreen.screens();
+  let maxY = 0;
+  for (let i = 0; i < screens.count(); i++) {
+    const frame = (screens.objectAtIndex$(i) as InstanceType<typeof NSScreen>).frame();
+    const screenMaxY = frame.origin.y + frame.size.height;
+    if (screenMaxY > maxY) maxY = screenMaxY;
+  }
+  return maxY;
 }
 
-function canClick() {
+function getMousePosition(): { x: number; y: number } {
+  const mouseLocation = NSEvent.mouseLocation();
+  return {
+    x: mouseLocation.x,
+    y: getCocoaMaxY() - mouseLocation.y
+  };
+}
+
+function canClick(): boolean {
   const isTrusted = systemPreferences.isTrustedAccessibilityClient(true);
   return isTrusted;
 }
 
-export function click(mouseButton: MouseButton, isDoubleClick: boolean) {
+export function click(mouseButton: MouseButton, isDoubleClick: boolean): void {
   if (!canClick()) {
     console.log("Can not click");
     return;
@@ -78,10 +81,3 @@ export function click(mouseButton: MouseButton, isDoubleClick: boolean) {
 
   CFRelease(clickEvent);
 }
-
-// setInterval(() => {
-//   const start = performance.now();
-//   click();
-//   const end = performance.now();
-//   console.log(`Time taken: ${end - start} milliseconds`);
-// }, 1000);
