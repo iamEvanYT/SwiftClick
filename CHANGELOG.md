@@ -1,0 +1,9 @@
+# Changelog
+
+## [1.0.1] - 2026-05-21
+
+- fix: not working on multi-screen setups
+
+## [1.0.0] - 2026-02-22
+
+- Initial Release
