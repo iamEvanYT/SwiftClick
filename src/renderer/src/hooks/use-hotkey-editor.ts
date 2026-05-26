@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { AppSettings } from "../types";
+import { captureKeyAccelerator } from "../utils/capture-key-accelerator";
 
 export const useHotkeyEditor = (onSave: (key: keyof AppSettings, value: string) => Promise<void>) => {
   const [isEditingHotkey, setIsEditingHotkey] = useState(false);
@@ -15,48 +16,9 @@ export const useHotkeyEditor = (onSave: (key: keyof AppSettings, value: string) 
   const handleHotkeyKeyDown = (e: React.KeyboardEvent): void => {
     e.preventDefault();
 
-    const modifiers = new Set<string>();
-    const nonModifiers: string[] = [];
-
-    if (e.ctrlKey || e.metaKey) modifiers.add(e.metaKey ? "Command" : "Control");
-    if (e.altKey) modifiers.add("Alt");
-    if (e.shiftKey) modifiers.add("Shift");
-
-    // Add the main key if it's not a modifier
-    if (!["Control", "Meta", "Alt", "Shift"].includes(e.key)) {
-      // Map browser key events to Electron accelerator format
-      // Based on: https://raw.githubusercontent.com/electron/electron/refs/heads/main/docs/tutorial/keyboard-shortcuts.md
-      const keyMap: { [key: string]: string } = {
-        " ": "Space",
-        ArrowUp: "Up",
-        ArrowDown: "Down",
-        ArrowLeft: "Left",
-        ArrowRight: "Right",
-        Enter: "Return",
-        Escape: "Esc",
-        CapsLock: "Capslock",
-        NumLock: "Numlock",
-        ScrollLock: "Scrolllock"
-      };
-
-      let keyValue: string;
-      if (keyMap[e.key]) {
-        keyValue = keyMap[e.key];
-      } else if (e.key.length === 1) {
-        // For single character keys (letters, numbers, symbols)
-        // Letters should be uppercase, symbols stay as-is for Electron
-        keyValue = e.key.match(/[a-z]/) ? e.key.toUpperCase() : e.key;
-      } else {
-        // Use the key as-is for other special keys (F1-F24, etc)
-        keyValue = e.key;
-      }
-
-      nonModifiers.push(keyValue);
-    }
-
-    const nextHotkey = [...modifiers, ...nonModifiers];
-    setPendingHotkey(nextHotkey);
-    setCanSaveHotkey(nonModifiers.length >= 1);
+    const { segments, hasMainKey } = captureKeyAccelerator(e);
+    setPendingHotkey(segments);
+    setCanSaveHotkey(hasMainKey);
   };
 
   const handleHotkeySave = async (): Promise<void> => {

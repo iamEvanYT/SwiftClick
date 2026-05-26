@@ -4,6 +4,8 @@ import { ClickCountSetting } from "./click-count-setting";
 import { IntervalSetting } from "./interval-setting";
 import { MouseButtonSetting } from "./mouse-button-setting";
 import { ClickTypeSetting } from "./click-type-setting";
+import { ClickerModeSetting } from "./clicker-mode-setting";
+import { TargetKeySetting } from "./target-key-setting";
 
 interface SettingsPanelProps {
   settings: AppSettings;
@@ -11,12 +13,19 @@ interface SettingsPanelProps {
   isEditingHotkey: boolean;
   pendingHotkey: string[];
   canSaveHotkey: boolean;
+  isEditingTargetKey: boolean;
+  pendingTargetKey: string[];
+  canSaveTargetKey: boolean;
   onSettingChange: (key: keyof AppSettings, value: string | number) => Promise<void>;
   onHotkeyEdit: () => void;
   onHotkeyClear: () => Promise<void>;
   onHotkeyKeyDown: (e: React.KeyboardEvent) => void;
   onHotkeySave: () => Promise<void>;
   onHotkeyCancel: () => void;
+  onTargetKeyEdit: () => void;
+  onTargetKeyKeyDown: (e: React.KeyboardEvent) => void;
+  onTargetKeySave: () => Promise<void>;
+  onTargetKeyCancel: () => void;
 }
 
 export const SettingsPanel = ({
@@ -25,12 +34,19 @@ export const SettingsPanel = ({
   isEditingHotkey,
   pendingHotkey,
   canSaveHotkey,
+  isEditingTargetKey,
+  pendingTargetKey,
+  canSaveTargetKey,
   onSettingChange,
   onHotkeyEdit,
   onHotkeyClear,
   onHotkeyKeyDown,
   onHotkeySave,
-  onHotkeyCancel
+  onHotkeyCancel,
+  onTargetKeyEdit,
+  onTargetKeyKeyDown,
+  onTargetKeySave,
+  onTargetKeyCancel
 }: SettingsPanelProps) => {
   return (
     <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-4 border border-slate-700/50 shadow-2xl">
@@ -47,6 +63,12 @@ export const SettingsPanel = ({
           onCancel={onHotkeyCancel}
         />
 
+        <ClickerModeSetting
+          value={settings.clickerMode}
+          disabled={isActive}
+          onChange={(value) => onSettingChange("clickerMode", value)}
+        />
+
         <ClickCountSetting
           value={settings.clickCount}
           disabled={isActive}
@@ -59,11 +81,25 @@ export const SettingsPanel = ({
           onChange={(value) => onSettingChange("interval", value)}
         />
 
-        <MouseButtonSetting
-          value={settings.mouseButton}
-          disabled={isActive}
-          onChange={(value) => onSettingChange("mouseButton", value)}
-        />
+        {settings.clickerMode === "mouse" ? (
+          <MouseButtonSetting
+            value={settings.mouseButton}
+            disabled={isActive}
+            onChange={(value) => onSettingChange("mouseButton", value)}
+          />
+        ) : (
+          <TargetKeySetting
+            targetKey={settings.targetKey}
+            isEditing={isEditingTargetKey}
+            pendingKey={pendingTargetKey}
+            canSave={canSaveTargetKey}
+            disabled={isActive}
+            onEdit={onTargetKeyEdit}
+            onKeyDown={onTargetKeyKeyDown}
+            onSave={onTargetKeySave}
+            onCancel={onTargetKeyCancel}
+          />
+        )}
 
         <ClickTypeSetting
           value={settings.clickType}

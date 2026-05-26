@@ -5,8 +5,10 @@ export const useAutoclicker = () => {
   const [isActive, setIsActive] = useState(false);
   const [settings, setSettings] = useState<AppSettings>({
     interval: 1000,
+    clickerMode: "mouse",
     mouseButton: "left",
     clickType: "single",
+    targetKey: "Space",
     hotkey: "",
     clickCount: 0
   });

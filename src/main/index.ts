@@ -24,8 +24,10 @@ const broadcastClickCount = (count: number): void => {
 const applyClickerSettings = (settings: AppSettings): void => {
   clicker.updateSettings({
     interval: settings.interval,
+    clickerMode: settings.clickerMode,
     mouseButton: settings.mouseButton,
     clickType: settings.clickType,
+    targetKey: settings.targetKey,
     clickCount: settings.clickCount
   });
 };

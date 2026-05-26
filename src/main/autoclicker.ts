@@ -1,6 +1,6 @@
 import type { ClickerSettings } from "../common/settings";
 import { DEFAULT_CLICKER_SETTINGS, clampClickCount, clampInterval } from "../common/settings";
-import { click } from "./clicker";
+import { click, pressKey } from "./clicker";
 
 class Clicker {
   private interval: NodeJS.Timeout | null = null;
@@ -24,8 +24,10 @@ class Clicker {
   public updateSettings(newSettings: Partial<ClickerSettings>): void {
     this.settings = {
       interval: clampInterval(newSettings.interval ?? this.settings.interval),
+      clickerMode: newSettings.clickerMode ?? this.settings.clickerMode,
       mouseButton: newSettings.mouseButton ?? this.settings.mouseButton,
       clickType: newSettings.clickType ?? this.settings.clickType,
+      targetKey: newSettings.targetKey ?? this.settings.targetKey,
       clickCount: clampClickCount(newSettings.clickCount ?? this.settings.clickCount)
     };
   }
@@ -47,7 +49,11 @@ class Clicker {
     this.onTickCallback?.(this.currentClickCount);
 
     this.interval = setInterval(() => {
-      click(this.settings.mouseButton, this.settings.clickType === "double");
+      if (this.settings.clickerMode === "key") {
+        pressKey(this.settings.targetKey, this.settings.clickType === "double");
+      } else {
+        click(this.settings.mouseButton, this.settings.clickType === "double");
+      }
 
       this.currentClickCount++;
       this.onTickCallback?.(this.currentClickCount);

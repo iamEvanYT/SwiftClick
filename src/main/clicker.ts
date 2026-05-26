@@ -1,9 +1,11 @@
 import { NSEvent, NSScreen } from "objcjs-types/AppKit";
 import {
   CGEventCreateMouseEvent,
+  CGEventCreateKeyboardEvent,
   CGEventPost,
   CGEventSetType,
   CGEventSetIntegerValueField,
+  CGEventSetFlags,
   CGEventField,
   CGEventTapLocation,
   CGEventType,
@@ -12,6 +14,7 @@ import {
 import { CFRelease } from "objcjs-extra/CoreFoundation";
 import { systemPreferences } from "electron";
 import { MouseButton } from "../common/settings";
+import { parseKeyAccelerator } from "./key-codes";
 
 function getCocoaMaxY(): number {
   const screens = NSScreen.screens();
@@ -80,4 +83,35 @@ export function click(mouseButton: MouseButton, isDoubleClick: boolean): void {
   }
 
   CFRelease(clickEvent);
+}
+
+function postKeyEvent(keyCode: number, keyDown: boolean, flags: number): void {
+  const keyEvent = CGEventCreateKeyboardEvent(null, keyCode, keyDown);
+  CGEventSetFlags(keyEvent, flags);
+  CGEventPost(CGEventTapLocation.SessionEventTap, keyEvent);
+  CFRelease(keyEvent);
+}
+
+export function pressKey(accelerator: string, isDoublePress: boolean): void {
+  if (!canClick()) {
+    console.log("Can not press key");
+    return;
+  }
+
+  const parsed = parseKeyAccelerator(accelerator);
+  if (!parsed) {
+    console.log("Invalid target key:", accelerator);
+    return;
+  }
+
+  const pressOnce = (): void => {
+    postKeyEvent(parsed.keyCode, true, parsed.flags);
+    postKeyEvent(parsed.keyCode, false, parsed.flags);
+  };
+
+  pressOnce();
+
+  if (isDoublePress) {
+    pressOnce();
+  }
 }
