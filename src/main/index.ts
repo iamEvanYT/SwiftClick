@@ -96,7 +96,7 @@ async function createWindow(): Promise<void> {
   mainWindow = new BrowserWindow({
     resizable: false,
     width: 400,
-    height: 550,
+    height: 600,
     titleBarStyle: "hiddenInset",
     show: false,
     autoHideMenuBar: true,
