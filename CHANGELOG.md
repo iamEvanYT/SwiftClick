@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2026-06-05
+
+- feat: add hold key support
+
 ## [1.1.0] - 2026-05-26
 
 - feat: add key clicker support
