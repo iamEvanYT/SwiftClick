@@ -92,7 +92,7 @@ function postKeyEvent(keyCode: number, keyDown: boolean, flags: number): void {
   CFRelease(keyEvent);
 }
 
-export function pressKey(accelerator: string, isDoublePress: boolean): void {
+export function pressKey(accelerator: string): void {
   if (!canClick()) {
     console.log("Can not press key");
     return;
@@ -104,14 +104,36 @@ export function pressKey(accelerator: string, isDoublePress: boolean): void {
     return;
   }
 
-  const pressOnce = (): void => {
-    postKeyEvent(parsed.keyCode, true, parsed.flags);
-    postKeyEvent(parsed.keyCode, false, parsed.flags);
-  };
+  postKeyEvent(parsed.keyCode, true, parsed.flags);
+  postKeyEvent(parsed.keyCode, false, parsed.flags);
+}
 
-  pressOnce();
-
-  if (isDoublePress) {
-    pressOnce();
+export function holdKey(accelerator: string): void {
+  if (!canClick()) {
+    console.log("Can not hold key");
+    return;
   }
+
+  const parsed = parseKeyAccelerator(accelerator);
+  if (!parsed) {
+    console.log("Invalid target key:", accelerator);
+    return;
+  }
+
+  postKeyEvent(parsed.keyCode, true, parsed.flags);
+}
+
+export function releaseKey(accelerator: string): void {
+  if (!canClick()) {
+    console.log("Can not release key");
+    return;
+  }
+
+  const parsed = parseKeyAccelerator(accelerator);
+  if (!parsed) {
+    console.log("Invalid target key:", accelerator);
+    return;
+  }
+
+  postKeyEvent(parsed.keyCode, false, parsed.flags);
 }

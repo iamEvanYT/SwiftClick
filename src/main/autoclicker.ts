@@ -1,16 +1,17 @@
 import type { ClickerSettings } from "../common/settings";
 import { DEFAULT_CLICKER_SETTINGS, clampClickCount, clampInterval } from "../common/settings";
-import { click, pressKey } from "./clicker";
+import { click, holdKey, pressKey, releaseKey } from "./clicker";
 
 class Clicker {
   private interval: NodeJS.Timeout | null = null;
+  private isKeyHeld = false;
   private settings: ClickerSettings = { ...DEFAULT_CLICKER_SETTINGS };
   private currentClickCount: number = 0;
   private onStopCallback?: () => void;
   private onTickCallback?: (count: number) => void;
 
   public get isActive(): boolean {
-    return this.interval !== null;
+    return this.interval !== null || this.isKeyHeld;
   }
 
   public getCurrentClickCount(): number {
@@ -48,9 +49,15 @@ class Clicker {
     this.currentClickCount = 0;
     this.onTickCallback?.(this.currentClickCount);
 
+    if (this.settings.clickerMode === "key" && this.settings.clickType === "hold") {
+      holdKey(this.settings.targetKey);
+      this.isKeyHeld = true;
+      return true;
+    }
+
     this.interval = setInterval(() => {
       if (this.settings.clickerMode === "key") {
-        pressKey(this.settings.targetKey, this.settings.clickType === "double");
+        pressKey(this.settings.targetKey);
       } else {
         click(this.settings.mouseButton, this.settings.clickType === "double");
       }
@@ -73,6 +80,11 @@ class Clicker {
   public stop(): boolean {
     if (!this.isActive) {
       return false;
+    }
+
+    if (this.isKeyHeld) {
+      releaseKey(this.settings.targetKey);
+      this.isKeyHeld = false;
     }
 
     if (this.interval) {

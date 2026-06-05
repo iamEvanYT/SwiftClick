@@ -226,6 +226,9 @@ app.on("window-all-closed", () => {
 });
 
 app.on("will-quit", () => {
+  // Stop the clicker
+  clicker.stop();
+
   // Unregister all shortcuts
   globalShortcut.unregisterAll();
   registeredHotkey = null;

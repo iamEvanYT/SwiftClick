@@ -102,6 +102,7 @@ export const SettingsPanel = ({
         )}
 
         <ClickTypeSetting
+          clickerMode={settings.clickerMode}
           value={settings.clickType}
           disabled={isActive}
           onChange={(value) => onSettingChange("clickType", value)}

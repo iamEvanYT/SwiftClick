@@ -1,5 +1,5 @@
 export type MouseButton = "left" | "right" | "middle";
-export type ClickType = "single" | "double";
+export type ClickType = "single" | "double" | "hold";
 export type ClickerMode = "mouse" | "key";
 
 export interface AppSettings {
@@ -54,6 +54,14 @@ function clampNumber(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
+function normalizeClickType(clickType: string, clickerMode: ClickerMode): ClickType {
+  if (clickerMode === "key") {
+    return clickType === "hold" ? "hold" : "single";
+  }
+
+  return clickType === "double" ? "double" : "single";
+}
+
 export function normalizeAppSettings(settings: Partial<AppSettings>): AppSettings {
   const merged: AppSettings = {
     ...DEFAULT_APP_SETTINGS,
@@ -64,7 +72,7 @@ export function normalizeAppSettings(settings: Partial<AppSettings>): AppSetting
     interval: clampInterval(merged.interval),
     clickerMode: merged.clickerMode === "key" ? "key" : "mouse",
     mouseButton: merged.mouseButton,
-    clickType: merged.clickType,
+    clickType: normalizeClickType(merged.clickType, merged.clickerMode),
     targetKey: typeof merged.targetKey === "string" ? merged.targetKey : DEFAULT_APP_SETTINGS.targetKey,
     hotkey: typeof merged.hotkey === "string" ? merged.hotkey : DEFAULT_APP_SETTINGS.hotkey,
     clickCount: clampClickCount(merged.clickCount)
