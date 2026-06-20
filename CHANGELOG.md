@@ -1,8 +1,9 @@
 # Changelog
 
-## [1.2.0] - 2026-06-05
+## [1.2.1] - 2026-06-20
 
 - feat: add hold key support
+- chore: update dependencies
 
 ## [1.1.0] - 2026-05-26
 
